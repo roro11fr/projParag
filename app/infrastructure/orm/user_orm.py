@@ -1,21 +1,23 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
+from __future__ import annotations
+
 from datetime import datetime
 
+from sqlalchemy import ForeignKey, String, DateTime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.infrastructure.db.base import Base
-from app.infrastructure.orm.company_orm import CompanyORM
 
 
 class UserORM(Base):
     __tablename__ = "account"
 
-    id = Column(Integer, primary_key=True, index=True)
-    company_id = Column(Integer, ForeignKey("company.id"), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
 
-    username = Column(String(150), nullable=False)
-    email = Column(String(255), unique=True, nullable=False)
-    password = Column(String(128), nullable=False)
-    role = Column(String(16), default="contabil", nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    username: Mapped[str] = mapped_column(String(150), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(128), nullable=False)
+    role: Mapped[str] = mapped_column(String(16), default="contabil", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
-    company = relationship(CompanyORM, backref="users")
+    company = relationship("CompanyORM", back_populates="users")
