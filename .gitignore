@@ -4,17 +4,16 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environments
-venv/
+
+# venv
 env/
-.venv/
+.env
 
 # Editor config
 .vscode/
 .idea/
 
 # Environment variables (sensitive)
-.env
 .env.*
 
 # SQLite example DB (dacă testezi cu SQLite)
