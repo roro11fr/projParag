@@ -1,19 +1,44 @@
-# Python
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-*.log
 
-# venv
+# Virtual environments
 venv/
-.env/
+env/
+.venv/
 
-# DB sqlite
-*.db
-
-# VSCode
+# Editor config
 .vscode/
+.idea/
 
-# Uvicorn reload cache
-*.pid
+# Environment variables (sensitive)
+.env
+.env.*
+
+# SQLite example DB (dacă testezi cu SQLite)
+*.db
+*.sqlite3
+
+# Alembic cache
+migrations/versions/__pycache__/
+
+# Docker junk
+*.log
+docker-compose.override.yml
+
+# Pytest cache
+.pytest_cache/
+
+# MyPy / Coverage
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Byte-compiled migrations
+migrations/__pycache__/
+
+# Local temp
+*.tmp
+*.log
