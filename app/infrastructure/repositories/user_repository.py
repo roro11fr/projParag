@@ -49,3 +49,13 @@ class UserRepository:
         await self.db.commit()
         await self.db.refresh(u)
         return _to_domain(u)
+
+    async def list_by_company(self, company_id: int) -> list[User]:
+        stmt = (
+            select(UserORM)
+            .where(UserORM.company_id == company_id)
+            .order_by(UserORM.id.asc())
+        )
+        res = await self.db.execute(stmt)
+        rows = res.scalars().all()
+        return [_to_domain(u) for u in rows]
