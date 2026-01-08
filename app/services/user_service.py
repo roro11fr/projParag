@@ -35,3 +35,6 @@ class UserService:
 
     async def get_user(self, user_id: int) -> User | None:
         return await self.repo.get_by_id(user_id)
+
+    async def list_users(self, company_id: int) -> list[User]:
+        return await self.repo.list_by_company(company_id)
