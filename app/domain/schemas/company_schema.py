@@ -13,7 +13,9 @@ class CompanyRead(BaseModel):
     id: int
     name: str
     cui: str
-    address: Optional[str] = None
-    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class CompanyUpdate(BaseModel):
+    name: str | None = Field(None, max_length=200)
+    address: str | None = None
