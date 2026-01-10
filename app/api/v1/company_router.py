@@ -124,3 +124,19 @@ async def delete_company(
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except CompanyNotFound:
         raise HTTPException(status_code=404, detail="Company not found")
+
+@router.patch("/{company_id}", response_model=CompanyRead)
+async def patch_company(
+    company_id: int,
+    data: CompanyUpdate,
+    service: CompanyService = Depends(get_company_service),
+):
+    try:
+        company = await service.update_company(company_id, data)
+        return to_company_read(company)
+
+    except CompanyNotFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Company not found",
+        )
