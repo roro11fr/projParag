@@ -112,3 +112,25 @@ async def delete_user(
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except UserNotFound:
         raise HTTPException(status_code=404, detail="User not found")
+
+@router.put("/{user_id}", response_model=UserRead)
+async def update_user(
+    user_id: int,
+    data: UserUpdate,
+    service: UserService = Depends(get_user_service),
+):
+    try:
+        user = await service.update_user(user_id, data)
+        return to_user_read(user)
+
+    except UserNotFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    except EmailAlreadyExists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already exists",
+        )
