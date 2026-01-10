@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.db.session import get_db
@@ -6,7 +7,7 @@ from app.infrastructure.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
 
 from app.domain.models.user import User
-from app.domain.schemas.user_schema import UserCreate, UserRead
+from app.domain.schemas.user_schema import UserCreate, UserRead, UserUpdate
 from app.domain.exceptions import (
     UserNotFound,
     EmailAlreadyExists,
@@ -36,6 +37,7 @@ def to_user_read(user: User) -> UserRead:
         username=user.username,
         email=user.email,
         role=user.role,
+        created_at=user.created_at
     )
 
 
@@ -83,3 +85,30 @@ async def list_users(
 ):
     users = await user_service.list_users(company_id)
     return [to_user_read(user) for user in users]
+
+@router.patch("/{user_id}", response_model=UserRead)
+async def update_user(
+    user_id: int,
+    payload: UserUpdate,
+    user_service: UserService = Depends(get_user_service),
+):
+    try:
+        user = await user_service.update_user(user_id, payload)
+        return to_user_read(user)
+    except UserNotFound:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    except EmailAlreadyExists:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
+    except UsernameAlreadyExistsInCompany:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists in this company")
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: int,
+    user_service: UserService = Depends(get_user_service),
+):
+    try:
+        await user_service.delete_user(user_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except UserNotFound:
+        raise HTTPException(status_code=404, detail="User not found")

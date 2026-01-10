@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.db.session import get_db
@@ -112,3 +113,14 @@ async def update_company(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Company not found",
         )
+
+@router.delete("/{company_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_company(
+    company_id: int,
+    company_service: CompanyService = Depends(get_company_service),
+):
+    try:
+        await company_service.delete_company(company_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except CompanyNotFound:
+        raise HTTPException(status_code=404, detail="Company not found")
