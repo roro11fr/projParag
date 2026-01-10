@@ -40,3 +40,8 @@ class CompanyService:
             raise CompanyNotFound()
 
         return updated
+
+    async def delete_company(self, company_id: int) -> None:
+        deleted = await self.repo.delete(company_id)
+        if not deleted:
+            raise CompanyNotFound()

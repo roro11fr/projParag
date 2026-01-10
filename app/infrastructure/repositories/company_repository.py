@@ -58,3 +58,15 @@ class CompanyRepository:
         await self.db.commit()
         await self.db.refresh(row)
         return to_domain(row)
+
+    async def delete(self, company_id: int) -> bool:
+        result = await self.db.execute(
+            select(CompanyORM).where(CompanyORM.id == company_id)
+        )
+        company_row = result.scalar_one_or_none()
+        if not company_row:
+            return False
+
+        await self.db.delete(company_row)
+        await self.db.commit()
+        return True
