@@ -32,3 +32,10 @@ class CompanyCuiAlreadyExists(ConflictError):
 # --- Client ---
 class ClientNotFound(NotFoundError):
     pass
+
+# ---Subscription---
+class SubscriptionNotFound(Exception):
+    pass
+
+class InvalidSubscriptionDates(Exception):
+    pass
