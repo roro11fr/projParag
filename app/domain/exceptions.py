@@ -28,3 +28,7 @@ class CompanyNotFound(NotFoundError):
 
 class CompanyCuiAlreadyExists(ConflictError):
     pass
+
+# --- Client ---
+class ClientNotFound(NotFoundError):
+    pass
