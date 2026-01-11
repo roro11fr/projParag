@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class User:
     id: Optional[int]
     company_id: int
