@@ -19,3 +19,4 @@ class CompanyORM(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     users: Mapped[list["UserORM"]] = relationship("UserORM", back_populates="company")
+    clients = relationship("ClientORM", back_populates="company", cascade="all, delete-orphan")
