@@ -3,7 +3,7 @@ from app.infrastructure.db.base import Base
 
 
 class PlanORM(Base):
-    __tablename__ = "plans"
+    __tablename__ = "plan"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False, unique=True)

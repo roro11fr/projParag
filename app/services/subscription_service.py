@@ -1,16 +1,22 @@
 from datetime import date
-
 from dateutil.relativedelta import relativedelta
 
-from app.domain.exceptions import SubscriptionNotFound, InvalidSubscriptionDates
+from app.domain.exceptions import (
+    SubscriptionNotFound,
+    InvalidSubscriptionDates,
+    PlanNotFound,
+    PlanInactive,
+)
 from app.domain.models.subscription import SubscriptionStatus
 from app.domain.schemas.subscription_schema import SubscriptionCreate, SubscriptionPatch
 from app.infrastructure.repositories.subscription_repository import SubscriptionRepository
+from app.infrastructure.repositories.plan_repository import PlanRepository
 
 
 class SubscriptionService:
-    def __init__(self, repo: SubscriptionRepository):
+    def __init__(self, repo: SubscriptionRepository, plan_repo: PlanRepository):
         self.repo = repo
+        self.plan_repo = plan_repo
 
     @staticmethod
     def _validate_dates(start_date: date, end_date: date) -> None:
@@ -19,11 +25,22 @@ class SubscriptionService:
 
     async def create_for_client(self, client_id: int, data: SubscriptionCreate):
         self._validate_dates(data.start_date, data.end_date)
+
+        plan = await self.plan_repo.get_by_id(data.plan_id)
+        if not plan:
+            raise PlanNotFound()
+
+        if not plan.is_active:
+            raise PlanInactive()
+
         return await self.repo.create(
             client_id,
+            plan_id=plan.id,
             start_date=data.start_date,
             end_date=data.end_date,
             status=data.status,
+            price_snapshot=plan.price,
+            currency_snapshot=plan.currency,
         )
 
     async def list_for_client(self, client_id: int):

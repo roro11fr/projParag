@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, func, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.db.base import Base
@@ -23,3 +23,5 @@ class SubscriptionORM(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
     plan_id: Mapped[int] = mapped_column(ForeignKey("plan.id"), nullable=False)
+    price_snapshot = mapped_column(Numeric(10, 2), nullable=False)
+    currency_snapshot = mapped_column(String(3), nullable=False)

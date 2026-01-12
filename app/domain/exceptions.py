@@ -39,3 +39,9 @@ class SubscriptionNotFound(Exception):
 
 class InvalidSubscriptionDates(Exception):
     pass
+# --- Plans ---
+class PlanNotFound(Exception):
+    pass
+
+class PlanInactive(Exception):
+    pass

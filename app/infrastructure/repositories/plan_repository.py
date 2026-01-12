@@ -16,3 +16,11 @@ class PlanRepository:
         )
         rows = res.scalars().all()
         return [to_domain(row) for row in rows]
+
+    async def get_by_id(self, plan_id: int) -> Plan | None:
+        stmt = select(PlanORM).where(
+            (PlanORM.id == plan_id) & (PlanORM.is_active.is_(True))
+        )
+        res = await self.db.execute(stmt)
+        row = res.scalar_one_or_none()
+        return to_domain(row) if row else None

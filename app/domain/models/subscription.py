@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Literal
+from decimal import Decimal
 from enum import Enum
 
 
@@ -18,3 +18,6 @@ class Subscription:
     end_date: date
     created_at: datetime
     updated_at: datetime
+    plan_id: int
+    price_snapshot: Decimal
+    currency_snapshot: str
