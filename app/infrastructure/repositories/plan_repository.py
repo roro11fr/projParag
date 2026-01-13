@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.models.plan import Plan
 from app.infrastructure.orm.plan_orm import PlanORM
 from app.infrastructure.mappers.plan_mapper import to_domain
+from app.domain.repositories.plan_repo import PlanRepo
 
 
-class PlanRepository:
+class PlanRepository(PlanRepo):
     def __init__(self, db: AsyncSession):
         self.db = db
 

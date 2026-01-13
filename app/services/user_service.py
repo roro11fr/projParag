@@ -6,11 +6,11 @@ from app.domain.exceptions import (
     UsernameAlreadyExistsInCompany,
 )
 from app.domain.security.password_hasher import hash_password
-from app.infrastructure.repositories.user_repository import UserRepository
+from app.domain.repositories.user_repo import UserRepo
 
 
 class UserService:
-    def __init__(self, repo: UserRepository):
+    def __init__(self, repo: UserRepo):
         self.repo = repo
 
     async def create_user(self, payload: UserCreate) -> User:

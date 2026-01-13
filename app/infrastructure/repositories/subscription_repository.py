@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.models.subscription import Subscription, SubscriptionStatus
 from app.infrastructure.mappers.subscription_mapper import to_domain
 from app.infrastructure.orm.subscription_orm import SubscriptionORM
+from app.domain.repositories.subscription_repo import SubscriptionRepo
 
-
-class SubscriptionRepository:
+class SubscriptionRepository(SubscriptionRepo):
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -55,7 +55,7 @@ class SubscriptionRepository:
         obj = res.scalar_one_or_none()
         return to_domain(obj) if obj else None
 
-    async def update_fields(
+    async def update_field(
         self,
         sub_id: int,
         *,
@@ -82,3 +82,17 @@ class SubscriptionRepository:
         await self.db.commit()
         await self.db.refresh(obj)
         return to_domain(obj)
+
+    async def delete(self, sub_id: int) -> bool:
+        stmt = select(SubscriptionORM).where(
+            SubscriptionORM.id == sub_id,
+            SubscriptionORM.is_deleted == False,  # noqa: E712
+        )
+        res = await self.db.execute(stmt)
+        obj = res.scalar_one_or_none()
+        if not obj:
+            return False
+
+        obj.is_deleted = True
+        await self.db.commit()
+        return True

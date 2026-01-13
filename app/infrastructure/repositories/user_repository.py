@@ -2,13 +2,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.user import User
+from app.domain.repositories.user_repo import UserRepo
 from app.infrastructure.mappers.user_mapper import _to_domain
 from app.infrastructure.orm.user_orm import UserORM
 
 
 
 
-class UserRepository:
+class UserRepository(UserRepo):
     def __init__(self, db: AsyncSession):
         self.db = db
 

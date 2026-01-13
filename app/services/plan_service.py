@@ -1,13 +1,15 @@
+from decimal import Decimal
+
 from sqlalchemy.exc import IntegrityError
 
 from app.domain.models.plan import Plan
+from app.domain.repositories.plan_repo import PlanRepo
 from app.domain.schemas.plan_schema import PlanCreate, PlanUpdate
 from app.domain.exceptions import PlanNotFound, PlanInactive, PlanNameAlreadyExists
-from app.infrastructure.repositories.plan_repository import PlanRepository
 
 
 class PlanService:
-    def __init__(self, repo: PlanRepository):
+    def __init__(self, repo: PlanRepo):
         self.repo = repo
 
     # ---------- PUBLIC / USER ----------
@@ -43,7 +45,7 @@ class PlanService:
         plan = Plan(
             id=None,
             name=data.name,
-            price=data.price,
+            price=Decimal(str(data.price)),
             billing_period=data.billing_period,
             is_active=data.is_active,
             currency=data.currency,
