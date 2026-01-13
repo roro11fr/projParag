@@ -7,7 +7,7 @@ from app.infrastructure.repositories.plan_repository import PlanRepository
 from app.infrastructure.repositories.subscription_repository import SubscriptionRepository
 from app.services.subscription_service import SubscriptionService
 from app.domain.schemas.subscription_schema import (
-    SubscriptionCreate, SubscriptionPatch, SubscriptionRead, RenewRequest
+    SubscriptionCreate, SubscriptionRead, RenewRequest
 )
 from app.domain.exceptions import SubscriptionNotFound, InvalidSubscriptionDates
 
@@ -40,19 +40,6 @@ async def list_subscriptions(client_id: int, service: SubscriptionService = Depe
     return await service.list_for_client(client_id)
 
 
-@router.patch(
-    "/subscriptions/{id}",
-    response_model=SubscriptionRead,
-)
-async def patch_subscription(id: int, payload: SubscriptionPatch, service: SubscriptionService = Depends(get_service)):
-    try:
-        return await service.patch(id, payload)
-    except SubscriptionNotFound:
-        raise HTTPException(status_code=404, detail="Subscription not found")
-    except InvalidSubscriptionDates as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
 @router.post(
     "/subscriptions/{id}/renew",
     response_model=SubscriptionRead,
@@ -73,12 +60,3 @@ async def expire_subscription(id: int, service: SubscriptionService = Depends(ge
         return await service.expire(id, today=date.today())
     except SubscriptionNotFound:
         raise HTTPException(status_code=404, detail="Subscription not found")
-
-
-@router.delete("/{sub_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_subscription(
-    sub_id: int,
-    svc: SubscriptionService = Depends(get_service),
-) -> None:
-    await svc.delete(sub_id)
-    return None
