@@ -4,7 +4,7 @@ from app.domain.models.client import Client
 from app.infrastructure.orm.client_orm import ClientORM
 
 
-def _to_domain(row: ClientORM) -> Client:
+def to_domain(row: ClientORM) -> Client:
     return Client(
         id=row.id,
         company_id=row.company_id,

@@ -73,3 +73,12 @@ async def expire_subscription(id: int, service: SubscriptionService = Depends(ge
         return await service.expire(id, today=date.today())
     except SubscriptionNotFound:
         raise HTTPException(status_code=404, detail="Subscription not found")
+
+
+@router.delete("/{sub_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_subscription(
+    sub_id: int,
+    svc: SubscriptionService = Depends(get_service),
+) -> None:
+    await svc.delete(sub_id)
+    return None

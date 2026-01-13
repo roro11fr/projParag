@@ -2,10 +2,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.domain.models.company import Company
+from app.domain.repositories.company_repo import CompanyRepo
 from app.infrastructure.orm.company_orm import CompanyORM
 from app.infrastructure.mappers.company_mapper import to_domain
 
-class CompanyRepository:
+class CompanyRepository(CompanyRepo):
     def __init__(self, db: AsyncSession):
         self.db = db
 

@@ -8,13 +8,13 @@ from app.domain.exceptions import (
     PlanInactive,
 )
 from app.domain.models.subscription import SubscriptionStatus
+from app.domain.repositories.plan_repo import PlanRepo
+from app.domain.repositories.subscription_repo import SubscriptionRepo
 from app.domain.schemas.subscription_schema import SubscriptionCreate, SubscriptionPatch
-from app.infrastructure.repositories.subscription_repository import SubscriptionRepository
-from app.infrastructure.repositories.plan_repository import PlanRepository
 
 
 class SubscriptionService:
-    def __init__(self, repo: SubscriptionRepository, plan_repo: PlanRepository):
+    def __init__(self, repo: SubscriptionRepo, plan_repo: PlanRepo):
         self.repo = repo
         self.plan_repo = plan_repo
 
@@ -55,7 +55,7 @@ class SubscriptionService:
         new_end = data.end_date if data.end_date is not None else current.end_date
         self._validate_dates(new_start, new_end)
 
-        updated = await self.repo.update_fields(
+        updated = await self.repo.update_field(
             sub_id,
             status=data.status,
             start_date=data.start_date,
@@ -73,7 +73,7 @@ class SubscriptionService:
 
         new_end = current.end_date + relativedelta(months=months)
 
-        updated = await self.repo.update_fields(
+        updated = await self.repo.update_field(
             sub_id,
             status=SubscriptionStatus.ACTIVE,
             end_date=new_end,
@@ -90,9 +90,14 @@ class SubscriptionService:
             raise SubscriptionNotFound()
 
         if current.end_date < today and current.status != SubscriptionStatus.EXPIRED:
-            updated = await self.repo.update_fields(sub_id, status=SubscriptionStatus.EXPIRED)
+            updated = await self.repo.update_field(sub_id, status=SubscriptionStatus.EXPIRED)
             if not updated:
                 raise SubscriptionNotFound()
             return updated
 
         return current
+
+    async def delete(self, sub_id: int) -> None:
+        deleted = await self.repo.delete(sub_id)
+        if not deleted:
+            raise SubscriptionNotFound()

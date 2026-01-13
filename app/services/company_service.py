@@ -1,11 +1,11 @@
 from app.domain.models.company import Company
+from app.domain.repositories.company_repo import CompanyRepo
 from app.domain.schemas.company_schema import CompanyCreate, CompanyUpdate
 from app.domain.exceptions import CompanyNotFound, CompanyCuiAlreadyExists
-from app.infrastructure.repositories.company_repository import CompanyRepository
 
 
 class CompanyService:
-    def __init__(self, repo: CompanyRepository):
+    def __init__(self, repo: CompanyRepo):
         self.repo = repo
 
     async def list_companies(self) -> list[Company]:

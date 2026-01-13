@@ -2,12 +2,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.client import Client
+from app.domain.repositories.client_repo import ClientRepo
 from app.domain.schemas.client_schema import ClientUpdate
-from app.infrastructure.mappers.client_mapper import _to_domain
+from app.infrastructure.mappers.client_mapper import to_domain
 from app.infrastructure.orm.client_orm import ClientORM
 
 
-class ClientRepository:
+class ClientRepository(ClientRepo):
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -18,7 +19,7 @@ class ClientRepository:
         )
         res = await self.db.execute(stmt)
         row = res.scalar_one_or_none()
-        return _to_domain(row) if row else None
+        return to_domain(row) if row else None
 
     async def list_by_company(self, company_id: int) -> list[Client]:
         stmt = select(ClientORM).where(
@@ -27,19 +28,40 @@ class ClientRepository:
         )
         res = await self.db.execute(stmt)
         rows = res.scalars().all()
-        return [_to_domain(r) for r in rows]
+        return [to_domain(r) for r in rows]
 
-    async def create(self, client: ClientORM) -> Client:
-        self.db.add(client)
+    async def create(
+            self,
+            *,
+            company_id: int,
+            name: str,
+            fiscal_code: str,
+            email: str | None,
+            phone: str | None,
+            address: str | None,
+            is_vat_payer: bool,
+            contact_person: str | None,
+    ) -> Client:
+        obj = ClientORM(
+            company_id=company_id,
+            name=name,
+            fiscal_code=fiscal_code,
+            email=email,
+            phone=phone,
+            address=address,
+            is_vat_payer=is_vat_payer,
+            contact_person=contact_person,
+        )
+        self.db.add(obj)
         await self.db.commit()
-        await self.db.refresh(client)
-        return _to_domain(client)
+        await self.db.refresh(obj)
+        return to_domain(obj)
 
     async def save(self, client: ClientORM) -> Client:
         self.db.add(client)
         await self.db.commit()
         await self.db.refresh(client)
-        return _to_domain(client)
+        return to_domain(client)
 
     async def update_partial(self, client_id: int, data: ClientUpdate) -> Client | None:
         res = await self.db.execute(
@@ -54,7 +76,7 @@ class ClientRepository:
         row.update_from_dto(data)
         await self.db.commit()
         await self.db.refresh(row)
-        return _to_domain(row)
+        return to_domain(row)
 
     async def soft_delete(self, client_id: int) -> bool:
         res = await self.db.execute(
