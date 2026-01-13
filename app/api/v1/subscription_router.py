@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.db.session import get_db
+from app.infrastructure.repositories.plan_repository import PlanRepository
 from app.infrastructure.repositories.subscription_repository import SubscriptionRepository
 from app.services.subscription_service import SubscriptionService
 from app.domain.schemas.subscription_schema import (
@@ -14,7 +15,9 @@ router = APIRouter(tags=["subscriptions"])
 
 
 def get_service(db: AsyncSession = Depends(get_db)) -> SubscriptionService:
-    return SubscriptionService(SubscriptionRepository(db))
+    sub_repo = SubscriptionRepository(db)
+    plan_repo = PlanRepository(db)
+    return SubscriptionService(sub_repo, plan_repo)
 
 
 @router.post(

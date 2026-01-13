@@ -11,4 +11,7 @@ def to_domain(o: SubscriptionORM) -> Subscription:
         end_date=o.end_date,
         created_at=o.created_at,
         updated_at=o.updated_at,
+        plan_id=o.plan_id,
+        price_snapshot = o.price_snapshot,
+        currency_snapshot= o.currency_snapshot
     )

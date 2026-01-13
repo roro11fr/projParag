@@ -16,4 +16,4 @@ def get_plan_service(db: AsyncSession = Depends(get_db)) -> PlanService:
 
 @router.get("", response_model=list[PlanRead])
 async def list_plans(service: PlanService = Depends(get_plan_service)):
-    return await service.list_plans()
+    return await service.list_active()

@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,12 +19,18 @@ class SubscriptionRepository:
         start_date: date,
         end_date: date,
         status: SubscriptionStatus,
+        plan_id: int,
+        price_snapshot: Decimal,
+        currency_snapshot: str,
     ) -> Subscription:
         obj = SubscriptionORM(
             client_id=client_id,
+            plan_id = plan_id,
             start_date=start_date,
             end_date=end_date,
             status=status.value,
+            price_snapshot= price_snapshot,
+            currency_snapshot= currency_snapshot,
         )
         self.db.add(obj)
         await self.db.commit()
