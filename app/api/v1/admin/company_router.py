@@ -18,8 +18,8 @@ from app.domain.exceptions import (
 )
 
 router = APIRouter(
-    prefix="/companies",
-    tags=["companies"],
+    prefix="/admin/companies",
+    tags=["admin-companies"],
 )
 
 

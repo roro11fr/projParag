@@ -14,7 +14,7 @@ from app.domain.exceptions import (
     UsernameAlreadyExistsInCompany,
 )
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/admin/users", tags=["admin-users"])
 
 
 # ---------- Dependency wiring ----------

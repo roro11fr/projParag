@@ -10,7 +10,7 @@ from app.domain.schemas.client_schema import ClientCreate, ClientRead, ClientUpd
 from app.domain.exceptions import ClientNotFound
 
 
-router = APIRouter(prefix="/clients", tags=["clients"])
+router = APIRouter(prefix="/admin/clients", tags=["admin-clients"])
 
 
 def get_client_service(db: AsyncSession = Depends(get_db)) -> ClientService:
