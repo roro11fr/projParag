@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 
 
@@ -10,3 +11,4 @@ class Plan:
     currency: str
     billing_period: str  # monthly / yearly
     is_active: bool
+    created_at: datetime | None = None

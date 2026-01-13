@@ -10,4 +10,5 @@ def to_domain(plan_orm: PlanORM) -> Plan:
         currency=plan_orm.currency,
         billing_period=plan_orm.billing_period,
         is_active=plan_orm.is_active,
+        created_at=plan_orm.created_at
     )

@@ -45,3 +45,6 @@ class PlanNotFound(Exception):
 
 class PlanInactive(Exception):
     pass
+
+class PlanNameAlreadyExists(Exception):
+    pass
