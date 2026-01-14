@@ -89,13 +89,18 @@ class SubscriptionService:
         if not current:
             raise SubscriptionNotFound()
 
-        if current.end_date < today and current.status != SubscriptionStatus.EXPIRED:
-            updated = await self.repo.update_field(sub_id, status=SubscriptionStatus.EXPIRED)
-            if not updated:
-                raise SubscriptionNotFound()
-            return updated
+        if current.status == SubscriptionStatus.EXPIRED:
+            return current
 
-        return current
+        updated = await self.repo.update_field(
+            sub_id,
+            status=SubscriptionStatus.EXPIRED,
+            end_date=today,
+        )
+        if not updated:
+            raise SubscriptionNotFound()
+
+        return updated
 
     async def delete(self, sub_id: int) -> None:
         deleted = await self.repo.delete(sub_id)

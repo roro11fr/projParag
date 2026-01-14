@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.db.session import get_db
@@ -14,8 +14,13 @@ def get_plan_service(db: AsyncSession = Depends(get_db)) -> PlanService:
 
 
 @router.get("", response_model=list[PlanRead])
-async def list_plans(service: PlanService = Depends(get_plan_service)):
-    return await service.list_all()
+async def list_plans(
+    include_inactive: bool = Query(False),
+    service: PlanService = Depends(get_plan_service),
+):
+    if include_inactive:
+        return await service.list_all()
+    return await service.list_active()
 
 
 @router.get("/{plan_id}", response_model=PlanRead)

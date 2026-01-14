@@ -31,7 +31,7 @@ async def patch_subscription(id: int, payload: SubscriptionPatch, service: Subsc
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{sub_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/subscriptions/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_subscription(
     sub_id: int,
     svc: SubscriptionService = Depends(get_service),
