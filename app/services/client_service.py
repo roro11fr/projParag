@@ -1,9 +1,10 @@
-from __future__ import annotations
-
+import logging
 from app.domain.exceptions import ClientNotFound
 from app.domain.models.client import Client
 from app.domain.repositories.client_repo import ClientRepo
 from app.domain.schemas.client_schema import ClientCreate, ClientUpdate
+
+logger = logging.getLogger(__name__)
 
 
 class ClientService:
@@ -11,14 +12,11 @@ class ClientService:
         self.repo = repo
 
     async def create_client(self, data: ClientCreate) -> Client:
-        """
-        Creates a client under a company.
-        DTO -> Domain params, then repo.
-        """
-        # EmailStr -> str | None (normalize)
+        logger.info(f"client.create | company_id={data.company_id} fiscal_code={data.fiscal_code}")
+
         email_str = str(data.email) if data.email is not None else None
 
-        return await self.repo.create(
+        client = await self.repo.create(
             company_id=data.company_id,
             name=data.name,
             fiscal_code=data.fiscal_code,
@@ -29,37 +27,40 @@ class ClientService:
             contact_person=data.contact_person,
         )
 
+        logger.info(f"client.created | id={client.id}")
+        return client
+
     async def get_client(self, client_id: int) -> Client:
+        logger.info(f"client.get | id={client_id}")
+
         client = await self.repo.get_by_id(client_id)
         if not client:
+            logger.warning(f"client.not_found | id={client_id}")
             raise ClientNotFound()
+
         return client
 
     async def list_clients(self, company_id: int) -> list[Client]:
+        logger.info(f"client.list | company_id={company_id}")
         return await self.repo.list_by_company(company_id)
 
     async def update_client(self, client_id: int, data: ClientUpdate) -> Client:
-        current = await self.repo.get_by_id(client_id)
-        if not current:
-            raise ClientNotFound()
+        logger.info(f"client.update_partial | id={client_id}")
 
-        # normalize EmailStr -> str | None
-        email_str = str(data.email) if data.email is not None else None
-
-        updated = await self.repo.update(
-            client_id,
-            name=data.name,
-            email=email_str if data.email is not None else None,
-            phone=data.phone,
-            address=data.address,
-            is_vat_payer=data.is_vat_payer,
-            contact_person=data.contact_person,
-        )
+        updated = await self.repo.update_partial(client_id, data)
         if not updated:
+            logger.warning(f"client.not_found | id={client_id}")
             raise ClientNotFound()
+
+        logger.info(f"client.updated | id={client_id}")
         return updated
 
     async def delete_client(self, client_id: int) -> None:
-        ok = await self.repo.delete(client_id)
+        logger.info(f"client.soft_delete | id={client_id}")
+
+        ok = await self.repo.soft_delete(client_id)
         if not ok:
+            logger.warning(f"client.not_found | id={client_id}")
             raise ClientNotFound()
+
+        logger.info(f"client.deleted | id={client_id}")
