@@ -1,4 +1,7 @@
+import logging
+
 from fastapi import FastAPI
+from app.core.logging import setup_logging
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.v1.admin.user_router import router as user_router
@@ -8,8 +11,16 @@ from app.api.v1.admin.subscription_router import router as subscription_router
 from app.api.v1.subscription_router import router as admin_subscription_router
 from app.api.v1.plan_router import router as plan_router
 from app.api.v1.admin.plan_router import router as admin_plan_router
+from app.core.handlers import register_exception_handlers
+from app.core.middleware import register_middleware
+
+setup_logging()
+logger = logging.getLogger("app")
 
 app = FastAPI(title="proj_parag")
+
+register_middleware(app)
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,

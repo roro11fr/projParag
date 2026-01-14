@@ -25,6 +25,7 @@ class SubscriptionRead(BaseModel):
     id: int
     client_id: int
     plan_id: int
+    client_name: str
 
     status: SubscriptionStatus
     start_date: date
