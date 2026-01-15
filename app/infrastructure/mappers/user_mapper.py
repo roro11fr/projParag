@@ -6,7 +6,7 @@ def _to_domain(u: UserORM) -> User:
         id=u.id,
         company_id=u.company_id,
         username=u.username,
-        email=u.email,
+        email=str(u.email),
         role=u.role,
         created_at=u.created_at,
     )

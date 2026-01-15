@@ -7,8 +7,6 @@ from app.services.client_service import ClientService
 
 from app.domain.models.client import Client
 from app.domain.schemas.client_schema import ClientCreate, ClientRead, ClientUpdate
-from app.domain.exceptions import ClientNotFound
-
 
 router = APIRouter(prefix="/admin/clients", tags=["admin-clients"])
 
@@ -30,6 +28,7 @@ def to_client_read(c: Client) -> ClientRead:
         contact_person=c.contact_person,
     )
 
+
 @router.post("", response_model=ClientRead, status_code=status.HTTP_201_CREATED)
 async def create_client(payload: ClientCreate, svc: ClientService = Depends(get_client_service)):
     client = await svc.create_client(payload)
@@ -44,28 +43,17 @@ async def list_clients(company_id: int, svc: ClientService = Depends(get_client_
 
 @router.get("/{client_id}", response_model=ClientRead)
 async def get_client(client_id: int, svc: ClientService = Depends(get_client_service)):
-    try:
-        client = await svc.get_client(client_id)
-        return to_client_read(client)
-    except ClientNotFound:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Client not found")
+    client = await svc.get_client(client_id)
+    return to_client_read(client)
 
 
 @router.put("/{client_id}", response_model=ClientRead)
 async def update_client(client_id: int, payload: ClientUpdate, svc: ClientService = Depends(get_client_service)):
-    try:
-        client = await svc.update_client(client_id, payload)
-        return to_client_read(client)
-    except ClientNotFound:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Client not found")
+    client = await svc.update_client(client_id, payload)
+    return to_client_read(client)
 
 
 @router.delete("/{client_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_client(client_id: int, svc: ClientService = Depends(get_client_service)):
-    try:
-        await svc.delete_client(client_id)
-    except ClientNotFound:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Client not found")
+    await svc.delete_client(client_id)
+    return None
