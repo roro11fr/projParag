@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.subscription import Subscription, SubscriptionStatus
 from app.infrastructure.mappers.subscription_mapper import to_domain
+from app.infrastructure.orm import ClientORM
 from app.infrastructure.orm.subscription_orm import SubscriptionORM
 from app.domain.repositories.subscription_repo import SubscriptionRepo
 
@@ -38,13 +39,26 @@ class SubscriptionRepository(SubscriptionRepo):
         return to_domain(obj)
 
     async def list_by_client(self, client_id: int) -> list[Subscription]:
-        stmt = select(SubscriptionORM).where(
-            SubscriptionORM.client_id == client_id,
-            SubscriptionORM.is_deleted == False,  # noqa: E712
-        ).order_by(SubscriptionORM.id.desc())
+        stmt = (
+            select(
+                SubscriptionORM,
+                ClientORM.name.label("client_name")
+            )
+            .join(ClientORM, ClientORM.id == SubscriptionORM.client_id)
+            .where(
+                SubscriptionORM.client_id == client_id,
+                SubscriptionORM.is_deleted.is_(False)
+            )
+        )
 
         res = await self.db.execute(stmt)
-        return [to_domain(x) for x in res.scalars().all()]
+        rows = res.all()
+
+        subscriptions: list[Subscription] = []
+        for sub_orm, client_name in rows:
+            subscriptions.append(to_domain(sub_orm, client_name=client_name))
+
+        return subscriptions
 
     async def get_by_id(self, sub_id: int) -> Subscription | None:
         stmt = select(SubscriptionORM).where(

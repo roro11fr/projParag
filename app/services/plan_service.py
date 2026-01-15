@@ -1,8 +1,8 @@
 import logging
 from decimal import Decimal
-
 from sqlalchemy.exc import IntegrityError
 
+from app.core.cache import SimpleCache
 from app.domain.models.plan import Plan
 from app.domain.repositories.plan_repo import PlanRepo
 from app.domain.schemas.plan_schema import PlanCreate, PlanUpdate
@@ -12,18 +12,32 @@ logger = logging.getLogger(__name__)
 
 
 class PlanService:
-    def __init__(self, repo: PlanRepo):
+    def __init__(self, repo: PlanRepo, cache: SimpleCache):
         self.repo = repo
+        self.cache = cache
 
     # ---------- PUBLIC / USER ----------
 
     async def list_active(self) -> list[Plan]:
-        logger.info("plan.list_active")
-        return await self.repo.list_active()
+        key = "plan:active_list"
+        cached = self.cache.get(key)
+        if cached is not None:
+            logger.info("plan.list_active | cache_hit")
+            return cached
+
+        logger.info("plan.list_active | cache_miss")
+        plans = await self.repo.list_active()
+        self.cache.set(key, plans, ttl_seconds=60)
+        return plans
 
     async def get_active_by_id(self, plan_id: int) -> Plan:
-        logger.info(f"plan.get_active | id={plan_id}")
+        key = f"plan:active:{plan_id}"
+        cached = self.cache.get(key)
+        if cached is not None:
+            logger.info(f"plan.get_active | id={plan_id} | cache_hit")
+            return cached
 
+        logger.info(f"plan.get_active | id={plan_id} | cache_miss")
         plan = await self.repo.get_by_id(plan_id)
         if not plan:
             logger.warning(f"plan.not_found | id={plan_id}")
@@ -33,23 +47,47 @@ class PlanService:
             logger.warning(f"plan.inactive | id={plan_id}")
             raise PlanInactive()
 
+        self.cache.set(key, plan, ttl_seconds=60)
         return plan
 
     # ---------- ADMIN ----------
 
     async def list_all(self) -> list[Plan]:
-        logger.info("plan.list_all")
-        return await self.repo.list_all()
+        key = "plan:all_list"
+        cached = self.cache.get(key)
+        if cached is not None:
+            logger.info("plan.list_all | cache_hit")
+            return cached
+
+        logger.info("plan.list_all | cache_miss")
+        plans = await self.repo.list_all()
+        self.cache.set(key, plans, ttl_seconds=30)
+        return plans
 
     async def get_by_id(self, plan_id: int) -> Plan:
-        logger.info(f"plan.get | id={plan_id}")
+        key = f"plan:{plan_id}"
+        cached = self.cache.get(key)
+        if cached is not None:
+            logger.info(f"plan.get | id={plan_id} | cache_hit")
+            return cached
 
+        logger.info(f"plan.get | id={plan_id} | cache_miss")
         plan = await self.repo.get_by_id(plan_id)
         if not plan:
             logger.warning(f"plan.not_found | id={plan_id}")
             raise PlanNotFound()
 
+        self.cache.set(key, plan, ttl_seconds=60)
         return plan
+
+    def _invalidate_plan_cache(self, plan_id: int | None = None) -> None:
+        # listele
+        self.cache.delete("plan:active_list")
+        self.cache.delete("plan:all_list")
+        # plan by id
+        if plan_id is not None:
+            self.cache.delete(f"plan:{plan_id}")
+            self.cache.delete(f"plan:active:{plan_id}")
 
     async def create_plan(self, data: PlanCreate) -> Plan:
         logger.info(f"plan.create | name={data.name} period={data.billing_period} active={data.is_active}")
@@ -74,7 +112,7 @@ class PlanService:
             logger.warning(f"plan.create integrity_conflict | name={data.name}")
             raise PlanNameAlreadyExists()
 
-        logger.info(f"plan.created | id={getattr(created, 'id', None)} name={created.name}")
+        self._invalidate_plan_cache(plan_id=created.id)
         return created
 
     async def update_plan(self, plan_id: int, data: PlanUpdate) -> Plan:
@@ -103,7 +141,7 @@ class PlanService:
             logger.warning(f"plan.not_found | id={plan_id}")
             raise PlanNotFound()
 
-        logger.info(f"plan.updated | id={plan_id}")
+        self._invalidate_plan_cache(plan_id=plan_id)
         return updated
 
     async def delete_plan(self, plan_id: int) -> None:
@@ -114,4 +152,4 @@ class PlanService:
             logger.warning(f"plan.not_found | id={plan_id}")
             raise PlanNotFound()
 
-        logger.info(f"plan.deleted | id={plan_id}")
+        self._invalidate_plan_cache(plan_id=plan_id)
