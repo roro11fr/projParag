@@ -13,6 +13,7 @@ class SubscriptionStatus(str, Enum):
 class Subscription:
     id: int
     client_id: int
+    client_name: str | None
     status: SubscriptionStatus
     start_date: date
     end_date: date
